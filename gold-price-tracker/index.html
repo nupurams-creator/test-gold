@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>The Bullion Ledger — Gold Price Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15130E;
+    --panel:#1E1B14;
+    --panel-2:#242017;
+    --paper:#EFE7D4;
+    --paper-dim:#B8AF9A;
+    --bullion:#C7992C;
+    --bullion-soft:#8A6C22;
+    --gain:#5FA377;
+    --loss:#C25C45;
+    --line:#3A3527;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    padding:0 0 3rem;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:1.5rem 1.1rem 0;}
+  header.top{margin-bottom:1.4rem;}
+  h1{
+    font-family:"Fraunces",Georgia,serif;
+    font-weight:600;
+    font-size:clamp(1.6rem,5vw,2.2rem);
+    margin:0 0 .25rem;
+    color:var(--paper);
+    letter-spacing:.2px;
+  }
+  .sub{
+    font-size:.82rem;
+    color:var(--paper-dim);
+    letter-spacing:.02em;
+  }
+  .sub b{color:var(--bullion);font-weight:600;}
+
+  .hero{margin:1.6rem 0 1.5rem;}
+  .hero-row{display:flex;align-items:baseline;gap:.7rem;flex-wrap:wrap;}
+  .hero-num{
+    font-family:"Fraunces",Georgia,serif;
+    font-weight:600;
+    font-size:clamp(2.1rem,9vw,3rem);
+    color:var(--paper);
+    line-height:1;
+  }
+  .hero-unit{font-size:.95rem;color:var(--paper-dim);}
+  .pill{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:.85rem;
+    font-weight:500;
+    padding:.25rem .55rem;
+    border-radius:999px;
+    display:inline-flex;
+    align-items:center;
+    gap:.25rem;
+  }
+  .pill.up{color:var(--gain);background:rgba(95,163,119,.12);}
+  .pill.down{color:var(--loss);background:rgba(194,92,69,.12);}
+  .pill.flat{color:var(--paper-dim);background:rgba(184,175,154,.1);}
+  .rule{margin-top:.85rem;}
+  .rule .l1{height:2px;background:var(--bullion);width:100%;}
+  .rule .l2{height:1px;background:var(--bullion-soft);width:100%;margin-top:3px;opacity:.6;}
+  .hero-date{margin-top:.6rem;font-size:.8rem;color:var(--paper-dim);}
+
+  .controls{
+    display:flex;
+    flex-wrap:wrap;
+    gap:.5rem;
+    margin-bottom:1.1rem;
+  }
+  button.seg{
+    font-family:inherit;
+    font-size:.85rem;
+    color:var(--paper);
+    background:var(--panel);
+    border:1px solid var(--line);
+    padding:.5rem .9rem;
+    border-radius:999px;
+    cursor:pointer;
+    min-height:40px;
+  }
+  button.seg.active{
+    background:var(--bullion);
+    border-color:var(--bullion);
+    color:var(--ink);
+    font-weight:600;
+  }
+  button.seg:focus-visible{outline:2px solid var(--bullion);outline-offset:2px;}
+
+  .custom-range{
+    display:none;
+    gap:.6rem;
+    flex-wrap:wrap;
+    align-items:center;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:.8rem;
+    margin:-.4rem 0 1.1rem;
+  }
+  .custom-range.show{display:flex;}
+  .custom-range label{font-size:.78rem;color:var(--paper-dim);display:block;margin-bottom:.25rem;}
+  .custom-range input[type=date]{
+    font-family:inherit;
+    background:var(--panel-2);
+    color:var(--paper);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:.5rem;
+    min-height:40px;
+    font-size:.85rem;
+  }
+  .custom-range button{
+    font-family:inherit;
+    background:var(--bullion);
+    color:var(--ink);
+    border:none;
+    border-radius:6px;
+    padding:.6rem 1rem;
+    font-weight:600;
+    font-size:.85rem;
+    cursor:pointer;
+    min-height:40px;
+  }
+
+  .table-scroll{
+    overflow-x:auto;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    -webkit-overflow-scrolling:touch;
+  }
+  table{
+    border-collapse:collapse;
+    width:100%;
+    min-width:560px;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:.8rem;
+  }
+  thead th{
+    background:var(--panel-2);
+    color:var(--bullion);
+    font-weight:600;
+    text-align:right;
+    padding:.55rem .7rem;
+    border-bottom:1px solid var(--line);
+    white-space:nowrap;
+    font-size:.72rem;
+    letter-spacing:.03em;
+    text-transform:uppercase;
+  }
+  thead tr.group th{
+    font-size:.68rem;
+    color:var(--paper-dim);
+    background:var(--panel);
+    border-bottom:1px solid var(--line);
+  }
+  thead th.datecol, tbody td.datecol{
+    text-align:left;
+    position:sticky;
+    left:0;
+    background:var(--panel-2);
+    z-index:2;
+  }
+  tbody td.datecol{background:var(--panel);}
+  tbody tr:nth-child(even) td.datecol{background:#211d15;}
+  tbody td{
+    padding:.55rem .7rem;
+    text-align:right;
+    border-bottom:1px solid var(--line);
+    white-space:nowrap;
+  }
+  tbody tr:nth-child(even){background:#19170f;}
+  tbody td.up{color:var(--gain);}
+  tbody td.down{color:var(--loss);}
+  tbody td.dash{color:var(--paper-dim);}
+  .empty, .loading{
+    padding:2rem 1rem;
+    text-align:center;
+    color:var(--paper-dim);
+    font-size:.9rem;
+  }
+  footer{
+    margin-top:1.2rem;
+    font-size:.72rem;
+    color:var(--paper-dim);
+    line-height:1.6;
+  }
+  footer a{color:var(--bullion);}
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <h1>The Bullion Ledger</h1>
+    <div class="sub">Coimbatore 24K &middot; CME Globex <b id="cmeSymbolLabel">GCQ6</b> &middot; USD/INR</div>
+  </header>
+
+  <div class="hero" id="hero"></div>
+
+  <div class="controls">
+    <button class="seg" data-range="7">7D</button>
+    <button class="seg" data-range="14">14D</button>
+    <button class="seg" data-range="30">30D</button>
+    <button class="seg" data-range="custom">Custom</button>
+  </div>
+
+  <div class="custom-range" id="customRange">
+    <div>
+      <label for="fromDate">From</label>
+      <input type="date" id="fromDate">
+    </div>
+    <div>
+      <label for="toDate">To</label>
+      <input type="date" id="toDate">
+    </div>
+    <button id="applyCustom">Apply</button>
+  </div>
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr class="group">
+          <th class="datecol"></th>
+          <th colspan="2">CME group</th>
+          <th colspan="2">Gold price &middot; 24K Coimbatore</th>
+          <th colspan="2">Forex</th>
+        </tr>
+        <tr>
+          <th class="datecol">Date</th>
+          <th>Change value</th>
+          <th>Percentage</th>
+          <th>&#8377;/1 gram</th>
+          <th>Difference %</th>
+          <th>USD/INR</th>
+          <th>Difference</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr><td colspan="7" class="loading">Loading data&hellip;</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>
+    Data collects once a day via a scheduled GitHub Action and is kept for a rolling 365 days in
+    <a href="data/gold_data.csv">data/gold_data.csv</a>. CME figure tracks Yahoo Finance symbol
+    <span id="cmeSymbolFoot">GCQ26.CMX</span> (CME Globex GCQ6, Aug 2026 &mdash; update this symbol in
+    <code>scripts/collect_data.py</code> once the contract rolls). Coimbatore rate is scraped from
+    LiveChennai.com; USD/INR from the Frankfurter API. <span id="lastUpdated"></span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var DATA_URL = "data/gold_data.csv";
+  var allRows = [];
+  var currentRange = 7;
+
+  function parseCSV(text){
+    var lines = text.trim().split(/\r?\n/);
+    if (lines.length < 2) return [];
+    var headers = lines[0].split(",");
+    var out = [];
+    for (var i = 1; i < lines.length; i++){
+      if (!lines[i].trim()) continue;
+      var cells = lines[i].split(",");
+      var row = {};
+      for (var j = 0; j < headers.length; j++){
+        row[headers[j].trim()] = (cells[j] !== undefined ? cells[j].trim() : "");
+      }
+      out.push(row);
+    }
+    return out;
+  }
+
+  function num(v){
+    if (v === undefined || v === null || v === "") return null;
+    var n = parseFloat(v);
+    return isNaN(n) ? null : n;
+  }
+
+  function fmtDate(iso){
+    var d = new Date(iso + "T00:00:00");
+    if (isNaN(d.getTime())) return iso;
+    var opts = { day: "numeric", month: "short", year: "numeric" };
+    return d.toLocaleDateString("en-GB", opts);
+  }
+
+  function fmtINR(v){
+    if (v === null) return null;
+    return v.toLocaleString("en-IN", { maximumFractionDigits: 0 });
+  }
+
+  function signPrefix(v){
+    if (v === null) return "";
+    return v > 0 ? "+" : "";
+  }
+
+  function deltaClass(v){
+    if (v === null) return "dash";
+    if (v > 0) return "up";
+    if (v < 0) return "down";
+    return "";
+  }
+
+  function arrow(v){
+    if (v === null) return "";
+    if (v > 0) return "\u25B2 ";
+    if (v < 0) return "\u25BC ";
+    return "";
+  }
+
+  function cell(v, decimals, suffix){
+    if (v === null) return '<td class="dash">&mdash;</td>';
+    var cls = deltaClass(v);
+    var text = arrow(v) + signPrefix(v) + v.toFixed(decimals) + (suffix || "");
+    return '<td class="' + cls + '">' + text + "</td>";
+  }
+
+  function renderHero(row){
+    var hero = document.getElementById("hero");
+    if (!row){
+      hero.innerHTML = "";
+      return;
+    }
+    var price = num(row.chennai_24k_price);
+    var diff = num(row.chennai_diff_pct);
+    var priceText = price === null ? "&mdash;" : "&#8377;" + fmtINR(price);
+    var pillClass = diff === null ? "flat" : (diff > 0 ? "up" : (diff < 0 ? "down" : "flat"));
+    var pillText = diff === null ? "no change data" : (arrow(diff) + signPrefix(diff) + diff.toFixed(2) + "%");
+    hero.innerHTML =
+      '<div class="hero-row">' +
+        '<span class="hero-num">' + priceText + '</span>' +
+        '<span class="hero-unit">/ gram, 24K</span>' +
+        '<span class="pill ' + pillClass + '">' + pillText + '</span>' +
+      '</div>' +
+      '<div class="rule"><div class="l1"></div><div class="l2"></div></div>' +
+      '<div class="hero-date">' + fmtDate(row.date) + ' &middot; Coimbatore</div>';
+  }
+
+  function renderTable(rows){
+    var tbody = document.getElementById("tbody");
+    if (!rows.length){
+      tbody.innerHTML = '<tr><td colspan="7" class="empty">No data in this range yet.</td></tr>';
+      return;
+    }
+    var sorted = rows.slice().sort(function(a,b){ return a.date < b.date ? 1 : -1; });
+    var html = "";
+    sorted.forEach(function(r){
+      html += "<tr>";
+      html += '<td class="datecol">' + fmtDate(r.date) + "</td>";
+      html += cell(num(r.cme_change), 2);
+      html += cell(num(r.cme_change_pct), 2, "%");
+      var price = num(r.chennai_24k_price);
+      html += price === null ? '<td class="dash">&mdash;</td>' : "<td>" + fmtINR(price) + "</td>";
+      html += cell(num(r.chennai_diff_pct), 2, "%");
+      var fx = num(r.usd_inr);
+      html += fx === null ? '<td class="dash">&mdash;</td>' : "<td>" + fx.toFixed(2) + "</td>";
+      html += cell(num(r.usd_inr_diff), 2);
+      html += "</tr>";
+    });
+    tbody.innerHTML = html;
+  }
+
+  function applyRange(){
+    if (!allRows.length){
+      renderTable([]);
+      return;
+    }
+    var rows;
+    if (currentRange === "custom"){
+      var from = document.getElementById("fromDate").value;
+      var to = document.getElementById("toDate").value;
+      rows = allRows.filter(function(r){
+        return (!from || r.date >= from) && (!to || r.date <= to);
+      });
+    } else {
+      var n = parseInt(currentRange, 10);
+      rows = allRows.slice(Math.max(0, allRows.length - n));
+    }
+    renderTable(rows);
+  }
+
+  function setActiveButton(target){
+    document.querySelectorAll(".seg").forEach(function(b){ b.classList.remove("active"); });
+    if (target) target.classList.add("active");
+  }
+
+  document.querySelectorAll(".seg").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var r = btn.getAttribute("data-range");
+      currentRange = r === "custom" ? "custom" : parseInt(r, 10);
+      setActiveButton(btn);
+      var customBox = document.getElementById("customRange");
+      if (r === "custom"){
+        customBox.classList.add("show");
+        if (allRows.length){
+          document.getElementById("fromDate").value = document.getElementById("fromDate").value || allRows[Math.max(0, allRows.length-7)].date;
+          document.getElementById("toDate").value = document.getElementById("toDate").value || allRows[allRows.length-1].date;
+        }
+      } else {
+        customBox.classList.remove("show");
+        applyRange();
+      }
+    });
+  });
+
+  document.getElementById("applyCustom").addEventListener("click", applyRange);
+
+  fetch(DATA_URL, { cache: "no-store" })
+    .then(function(resp){
+      if (!resp.ok) throw new Error("no data file yet");
+      return resp.text();
+    })
+    .then(function(text){
+      allRows = parseCSV(text).filter(function(r){ return r.date; });
+      allRows.sort(function(a,b){ return a.date < b.date ? -1 : 1; });
+      if (allRows.length){
+        renderHero(allRows[allRows.length - 1]);
+        document.getElementById("cmeSymbolFoot").textContent = allRows[allRows.length-1].cme_symbol || "GCQ26.CMX";
+        document.getElementById("lastUpdated").textContent = "Last entry: " + fmtDate(allRows[allRows.length-1].date) + ".";
+      }
+      setActiveButton(document.querySelector('.seg[data-range="7"]'));
+      currentRange = 7;
+      applyRange();
+    })
+    .catch(function(){
+      document.getElementById("tbody").innerHTML =
+        '<tr><td colspan="7" class="empty">No data yet. Once the daily collector workflow runs at least once ' +
+        '(Actions tab &rarr; Collect daily gold price data &rarr; Run workflow), this table fills in automatically.</td></tr>';
+      setActiveButton(document.querySelector('.seg[data-range="7"]'));
+    });
+})();
+</script>
+</body>
+</html>
