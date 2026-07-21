@@ -1,2 +1,3 @@
 date,cme_symbol,cme_price,cme_change,cme_change_pct,chennai_24k_price,chennai_diff_pct,usd_inr,usd_inr_diff
 2026-07-20,GCQ26.CMX,4028.5,9.7,0.24,14345.0,,96.3,
+2026-07-21,GCQ26.CMX,4078.1,62.2,1.55,14422.0,0.54,96.35,0.05
