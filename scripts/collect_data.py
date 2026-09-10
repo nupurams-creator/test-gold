@@ -32,7 +32,7 @@ DATA_FILE = os.path.join(DATA_DIR, "gold_data.csv")
 # Month codes: F=Jan G=Feb H=Mar J=Apr K=May M=Jun N=Jul Q=Aug U=Sep V=Oct X=Nov Z=Dec.
 # When this contract expires/rolls, update this one line to the next month
 # you want to track (e.g. "GCZ26.CMX" for the Dec 2026 contract).
-CME_SYMBOL = "GCQ26.CMX"
+CME_SYMBOL = "GCV26.CMX"
 
 CHENNAI_URL = "https://www.livechennai.com/gold_silverrate_Coimbatore.asp"
 HTTP_HEADERS = {
