@@ -3,7 +3,7 @@
 Daily data collector for the Gold Price Tracker.
 
 Fetches three things once a day and appends one row to data/gold_data.csv:
-  1. CME Globex gold futures change value & % (currently contract GCV6 / Sep 2026)
+  1. CME Globex gold futures change value & % (currently contract GCU6 / Sep 2026)
   2. Coimbatore 24K (Pure Gold) rate per 1 gram, via livechennai.com
   3. USD/INR forex rate, via the free Frankfurter API (ECB-sourced, no key needed)
 
@@ -32,7 +32,7 @@ DATA_FILE = os.path.join(DATA_DIR, "gold_data.csv")
 # Month codes: F=Jan G=Feb H=Mar J=Apr K=May M=Jun N=Jul Q=Aug U=Sep V=Oct X=Nov Z=Dec.
 # When this contract expires/rolls, update this one line to the next month
 # you want to track (e.g. "GCZ26.CMX" for the Dec 2026 contract).
-CME_SYMBOL = "GCV26.CMX"
+CME_SYMBOL = "GCU26.CMX"
 
 CHENNAI_URL = "https://www.livechennai.com/gold_silverrate_Coimbatore.asp"
 HTTP_HEADERS = {
