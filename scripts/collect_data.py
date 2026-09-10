@@ -3,7 +3,7 @@
 Daily data collector for the Gold Price Tracker.
 
 Fetches three things once a day and appends one row to data/gold_data.csv:
-  1. CME Globex gold futures change value & % (currently contract GCQ6 / Aug 2026)
+  1. CME Globex gold futures change value & % (currently contract GCV6 / Sep 2026)
   2. Coimbatore 24K (Pure Gold) rate per 1 gram, via livechennai.com
   3. USD/INR forex rate, via the free Frankfurter API (ECB-sourced, no key needed)
 
